@@ -3,7 +3,7 @@
 
 Trying to plot gene expression using `scanpy` but it throws an error because a gene name you provided does not match the names in `adata.var_names`? You have to search online for gene aliases to find the one that matches your data.
 
-__GeneAlias__ takes a list of genes and builds a dictionary of gene aliases from the [HUGO Gene Nomenclature Committee (HGNC)](https://www.genenames.org/) database. You query the dictionary with a gene alias and it gives you the symbol used in your `adata`. For example, say you're interested in the transcription factor _E2A_. The official symbol is _TCF3_ and, in this example, is the one used in your dataset. Querying with _E2A_, _ITF1_, _bHLHb21_, or any other recognized alias will return _TCF3_. 
+__GeneAlias__ takes a list of genes and builds a dictionary of gene aliases from the [HUGO Gene Nomenclature Committee (HGNC)](https://www.genenames.org/) database. You query the dictionary with a gene alias and it gives you the symbol used in your `adata`. For example, say you're interested in the transcription factor _E2A_. The official symbol is _TCF3_ and (in this example) is the one used in your dataset. Querying with _E2A_, _ITF1_, _bHLHb21_, or any other recognized alias will return _TCF3_. 
 
 ## Installation
 Clone the repository from https://github.com/stemcellbioengineering/GeneAlias/. Then open your terminal, navigate to the root directory (contains the `pyproject.toml` file), and run the command `pip install .` to install the package and dependencies.
@@ -44,13 +44,14 @@ ad.load("path/to/file.json")
 If you're interested in other information from the HGNC database, a helper function is included to make requests through the API.
 ```python
 from genealias import aliases as al
+
 response = al.fetch_hgnc("TCF3", field="symbol")
 ```
 The response is a complete `.json` formatted record for the gene. The field can be any searchable field definition from the [HGNC REST API](https://www.genenames.org/help/rest/).
 
 ## Application notes
-- If you query a gene that is not present in the dictionary, it will skip that query rather than raise a KeyError. A message will be displayed altering you to this
-- Dictionary queries are case-insensitive, so you don't need to remember the case of gene aliases like _bHLHb21_
+- If you query a gene that is not present in the dictionary, it will skip that query rather than raise a KeyError. A message will be displayed altering you to this.
+- Dictionary queries are case-insensitive, so you don't need to remember the case of gene aliases like _bHLHb21_.
 - The dictionary cannot handle partial matches, so spelling must be correct.
 - Currently only the approved gene symbol and alias symbols are searched in the HGNC database. Future versions could include ENSEMBL ID or other values if there is interest. 
 
