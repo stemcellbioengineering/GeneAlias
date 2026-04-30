@@ -53,7 +53,8 @@ The response is a complete `.json` formatted record for the gene. The field can 
 - If you query a gene that is not present in the dictionary, it will skip that query rather than raise a KeyError. A message will be displayed altering you to this.
 - Dictionary queries are case-insensitive, so you don't need to remember the case of gene aliases like _bHLHb21_.
 - The dictionary cannot handle partial matches, so spelling must be correct.
-- Currently only the approved gene symbol and alias symbols are searched in the HGNC database. Future versions could include ENSEMBL ID or other values if there is interest. 
+- Currently only the approved gene symbol and alias symbols are searched in the HGNC database. Future versions could include ENSEMBL ID or other values if there is interest.
+- If you have non-standard names in your dataset, they can still be added to the dictionary. This is to accomodate CITE-seq, where a variable name might be "protein-CD19_TotalSeqB". The dictionary key and value will be the same without any associated aliases.
 
 ## Contributions
 Contributors are welcome! If you have an idea for a new feature you can [issue a pull request](https://github.com/stemcellbioengineering/GeneAlias/pulls).
