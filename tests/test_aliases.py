@@ -4,19 +4,19 @@ import tempfile
 #import pytest
 from unittest.mock import patch
 
-from genealias.gene_alias import fetch_hugo, AliasDict
+from genealias.aliases import fetch_hgnc, AliasDict
 
 
-# --- fetch_hugo ---
+# --- fetch_hgnc ---
 
-class TestFetchHugo:
+class TestFetchHgnc:
     def test_return_from_symbol(self):
-        response = fetch_hugo('TP53', field='symbol')
+        response = fetch_hgnc('TP53', field='symbol')
         assert response is not None
         assert response['docs'][0]['symbol'] == 'TP53'
 
     def test_return_from_alias(self):
-        response = fetch_hugo('P53', field='alias_symbol')
+        response = fetch_hgnc('P53', field='alias_symbol')
         assert response is not None
         assert response['docs'][0]['symbol'] == 'TP53'
 
@@ -31,7 +31,7 @@ class TestAliasDictInit:
 class TestAliasDictCall:
     def test_returns_mapped_genes(self):
         ad = AliasDict()
-        ad.aliases = {'P53': 'TP53', 'TP53': 'TP53'}
+        ad.aliases = {'p53': 'TP53', 'tp53': 'TP53'}
         assert ad(['P53', 'TP53']) == ['TP53', 'TP53']
 
     def test_skips_unknown_genes(self):
@@ -46,30 +46,30 @@ class TestAliasDictBuild:
         ad = AliasDict()
         ad.build(['TP53'])
 
-        assert ad.aliases['TP53'] == 'TP53'
-        assert ad.aliases['P53'] == 'TP53'
-        assert ad.aliases['LFS1'] == 'TP53'
+        assert ad.aliases['tp53'] == 'TP53'
+        assert ad.aliases['p53'] == 'TP53'
+        assert ad.aliases['lfs1'] == 'TP53'
 
     def test_builds_from_alias(self):
         ad = AliasDict()
         ad.build(['P53'])
 
-        assert ad.aliases['TP53'] == 'P53'
-        assert ad.aliases['P53'] == 'P53'
-        assert ad.aliases['LFS1'] == 'P53'
+        assert ad.aliases['tp53'] == 'P53'
+        assert ad.aliases['p53'] == 'P53'
+        assert ad.aliases['lfs1'] == 'P53'
 
     def test_non_gene_symbol(self):
         ad = AliasDict()
         ad.build(['FAKEGENE'])
 
-        assert ad.aliases['FAKEGENE'] == 'FAKEGENE'
+        assert ad.aliases['fakegene'] == 'FAKEGENE'
 
 # --- AliasDict.save ---
 
 class TestAliasDictSave:
     def test_saves_aliases_to_json_file(self):
         ad = AliasDict()
-        ad.aliases = {'P53': 'TP53', 'TP53': 'TP53'}
+        ad.aliases = {'p53': 'TP53', 'tp53': 'TP53'}
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = os.path.join(tmpdir, 'aliases.json')
@@ -77,7 +77,7 @@ class TestAliasDictSave:
             with open(path) as f:
                 loaded = json.load(f)
 
-        assert loaded == {'P53': 'TP53', 'TP53': 'TP53'}
+        assert loaded == {'p53': 'TP53', 'tp53': 'TP53'}
 
     def test_appends_json_extension_if_missing(self):
         ad = AliasDict()

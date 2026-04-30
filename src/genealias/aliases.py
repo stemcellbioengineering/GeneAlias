@@ -5,7 +5,7 @@ import json
 from urllib.parse import urlparse
 
 
-def fetch_hugo(query:str, field:str = 'symbol') -> (dict | None):
+def fetch_hgnc(query:str, field:str = 'symbol') -> (dict | None):
     '''
     Fetches data from HUGO Gene Nomenclature Committee (HGNC) REST API for a given query and field.
     See https://www.genenames.org/help/rest/ for more information on the API.
@@ -112,9 +112,10 @@ class AliasDict:
             # Check that gene is a string
             if not isinstance(gene, str):
                 raise TypeError('gene must be a str')
+            
             # Get gene from alias dictionary
             try:
-                result.append(self.aliases[gene])
+                result.append(self.aliases[gene.lower()])
             except KeyError:
                 print('Gene not found: ' + gene)
         
@@ -149,7 +150,7 @@ class AliasDict:
                 raise TypeError('gene must be a str')
 
             # Try searching by symbol
-            data = fetch_hugo(gene, field='symbol')
+            data = fetch_hgnc(gene, field='symbol')
             # Handles request error
             if data is None:
                 continue
@@ -159,7 +160,7 @@ class AliasDict:
 
             # If not found, try searching by alias
             if data['numFound']==0:
-                data = fetch_hugo(gene, field='alias_symbol')
+                data = fetch_hgnc(gene, field='alias_symbol')
                 # Handles request error
                 if data is None:
                     continue
@@ -171,16 +172,16 @@ class AliasDict:
                 
                 # Add each alias as key and gene as value
                 for alias in alias_symbol:
-                    self.aliases[alias] = gene
+                    self.aliases[alias.lower()] = gene
                 
                 # Add the symbol as key and gene as value
-                self.aliases[symbol] = gene
+                self.aliases[symbol.lower()] = gene
                 
             else:
-                print('Gene not found in HUGO: {}'.format(gene))
+                print('Gene not found: {}'.format(gene))
             
             # Add the gene itself as key and value
-            self.aliases[gene] = gene
+            self.aliases[gene.lower()] = gene
 
     def save(self, path:str) -> None:
         '''
