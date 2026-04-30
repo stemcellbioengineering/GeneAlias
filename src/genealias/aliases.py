@@ -5,6 +5,7 @@ import json
 from urllib.parse import urlparse
 
 
+
 def fetch_hgnc(query:str, field:str = 'symbol') -> (dict | None):
     '''
     Fetches data from HUGO Gene Nomenclature Committee (HGNC) REST API for a given query and field.
@@ -80,6 +81,7 @@ class AliasDict:
             A dictionary where keys are gene aliases and values are the corresponding gene symbols.
         '''
         self.aliases={}
+        self._API_REQUEST_RATE = 0.025
 
     def __call__(self, genes:list[str]) -> list[str]:
         '''
@@ -154,9 +156,8 @@ class AliasDict:
             # Handles request error
             if data is None:
                 continue
-
-            # Sleep for 0.1 seconds to avoid hitting rate limit (max 10 requests per second)
-            time.sleep(0.1)
+            # Sleep to avoid hitting rate limit
+            time.sleep(self._API_REQUEST_RATE)
 
             # If not found, try searching by alias
             if data['numFound']==0:
@@ -164,16 +165,21 @@ class AliasDict:
                 # Handles request error
                 if data is None:
                     continue
+                # Sleep to avoid hitting rate limit
+                time.sleep(self._API_REQUEST_RATE)
             
             # If found, add to dictionary
             if data['numFound'] > 0:
                 symbol = data['docs'][0]['symbol']
-                alias_symbol = data['docs'][0]['alias_symbol']
-                
-                # Add each alias as key and gene as value
-                for alias in alias_symbol:
-                    self.aliases[alias.lower()] = gene
-                
+                try:
+                    alias_symbol = data['docs'][0]['alias_symbol']
+                    
+                    # Add each alias as key and gene as value
+                    for alias in alias_symbol:
+                        self.aliases[alias.lower()] = gene
+                except KeyError:
+                    pass
+
                 # Add the symbol as key and gene as value
                 self.aliases[symbol.lower()] = gene
                 
