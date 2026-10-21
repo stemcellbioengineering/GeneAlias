@@ -1,11 +1,10 @@
 import json
 import os
 import tempfile
-#import pytest
-from unittest.mock import patch
-
 from genealias.aliases import fetch_hgnc, AliasDict
 
+# To conduct tests, run:
+# > pytest /tests/
 
 # --- fetch_hgnc ---
 

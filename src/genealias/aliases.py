@@ -81,7 +81,7 @@ class AliasDict:
             A dictionary where keys are gene aliases and values are the corresponding gene symbols.
         '''
         self.aliases={}
-        self._API_REQUEST_RATE = 0.025
+        self._API_REQUEST_RATE = 0.1 # seconds
 
     def __call__(self, genes:list[str]) -> list[str]:
         '''
@@ -125,7 +125,7 @@ class AliasDict:
 
     def build(self, genes:list[str]) -> None:
         '''
-        Build a dictionary of gene aliases
+        Build a dictionary of gene aliases. If a dictionary 
 
         
         Parameters
@@ -145,17 +145,23 @@ class AliasDict:
         if not isinstance(genes, (list,tuple)):
             raise TypeError('genes must be a list or tuple of str')
 
+        idx = 1
+        elapsed_time = 0
+
         # Iterate through genes and fetch data from HUGO
         for gene in genes:
-            # Check that gene is a string            
+            # Check that gene is a string and skip if not        
             if not isinstance(gene, str):
-                raise TypeError('gene must be a str')
+                print('genes must be type str, not: {}'.format(type(gene)))
+                continue
 
             # Check if gene is already in the dictionary
             # Skip if it is already present to avoid unnecessary API calls
             if gene.lower() in self.aliases:
                 continue
 
+            # Start a timer to measure the time taken for the API request
+            start_time = time.perf_counter()
             # Try searching by symbol
             data = fetch_hgnc(gene, field='symbol')
             # Handles request error
@@ -166,6 +172,8 @@ class AliasDict:
 
             # If not found, try searching by alias
             if data['numFound']==0:
+                # Restart the timer to avoid measuring elapsed time for two requests
+                start_time = time.perf_counter()
                 data = fetch_hgnc(gene, field='alias_symbol')
                 # Handles request error
                 if data is None:
@@ -194,6 +202,17 @@ class AliasDict:
             # Add the gene itself as key and value
             self.aliases[gene.lower()] = gene
 
+            # Adjust API request rate to target 10 requests per second
+            elapsed_time += time.perf_counter() - start_time
+            if idx >= 10:
+                # Automatically adjust request rate based on average elapsed time of last n requests
+                self._API_REQUEST_RATE += (0.1 - elapsed_time/idx)
+                idx = 1
+            else:
+                idx += 1
+
+
+
     def save(self, path:str) -> None:
         '''
         Saves the alias dictionary to a JSON file.
@@ -202,7 +221,8 @@ class AliasDict:
         Parameters
         ----------
         path : str
-            The path to the JSON file where the alias dictionary will be saved.
+            The file path where the alias dictionary will be saved. Directories on the path will be created if they do not already exist.
+            A '.json' extension will be added to the path if not provided (example: 'path/to/file' --> 'path/to/file.json').
     
             
         Raises
@@ -238,7 +258,7 @@ class AliasDict:
         TypeError
             If the path is not a string.
         FileNotFoundError
-            If the file is not found.
+            If the file is not found or is not a JSON.
         '''
         # Check that path is a string
         if not isinstance(path, str):
@@ -246,6 +266,9 @@ class AliasDict:
         # Check that file exists
         if not os.path.isfile(path):
             raise FileNotFoundError('File not found: ' + path)
+        # Check for .json extension to make sure file type is correct
+        if not path.endswith('.json'):
+            raise FileNotFoundError('File must be JSON')
         # Load alias dictionary from file
         with open(path, 'r') as f:
             self.aliases = json.load(f)
