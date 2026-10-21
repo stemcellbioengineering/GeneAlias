@@ -151,6 +151,11 @@ class AliasDict:
             if not isinstance(gene, str):
                 raise TypeError('gene must be a str')
 
+            # Check if gene is already in the dictionary
+            # Skip if it is already present to avoid unnecessary API calls
+            if gene.lower() in self.aliases:
+                continue
+
             # Try searching by symbol
             data = fetch_hgnc(gene, field='symbol')
             # Handles request error
