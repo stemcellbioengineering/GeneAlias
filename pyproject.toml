@@ -30,6 +30,9 @@ test = ["pytest >= 8"]
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools_scm.tag]
+prefix = "v"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]

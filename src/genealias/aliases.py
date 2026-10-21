@@ -206,7 +206,7 @@ class AliasDict:
             elapsed_time += time.perf_counter() - start_time
             if idx >= 10:
                 # Automatically adjust request rate based on average elapsed time of last n requests
-                self._API_REQUEST_RATE += (0.1 - elapsed_time/idx)
+                self._API_REQUEST_RATE = max(0.001, self._API_REQUEST_RATE + (0.1 - elapsed_time/idx))
                 idx = 1
             else:
                 idx += 1
